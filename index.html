@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hugo 與 Sophie 表現分數簿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F2E7;
+  --paper-2:#FBF9F2;
+  --rule:#E0D8C6;
+  --ink:#23231F;
+  --ink-soft:#6E695C;
+  --book:#0F6B4C;
+  --book-dark:#0A4A34;
+  --grid-red:#D9AFA5;
+  --grid-line:#E6C3BA;
+  --hugo:#2C5FA0;
+  --sophie:#8A2F5A;
+  --stamp:#BF3025;
+  --radius:4px;
+  --display:"Noto Serif TC","Source Han Serif TC","Songti TC","PingFang HK",serif;
+  --body:"Noto Sans TC","PingFang HK","Microsoft JhengHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  background:var(--paper);
+  background-image:linear-gradient(var(--rule) 1px,transparent 1px);
+  background-size:100% 34px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px 64px}
+
+/* ---------- 練習簿封面 header ---------- */
+header{
+  margin:0 -16px 22px;
+  padding:26px 22px 22px;
+  background:var(--book);
+  color:#F3EEDF;
+  border-bottom:6px double rgba(255,255,255,.45);
+}
+.book-label{
+  display:inline-block;
+  background:var(--paper-2);
+  color:var(--ink);
+  border:2px solid var(--book-dark);
+  padding:14px 20px 12px;
+  max-width:100%;
+}
+h1{
+  font-family:var(--display);
+  font-weight:900;
+  font-size:clamp(22px,5.2vw,34px);
+  margin:0;
+  letter-spacing:.04em;
+  line-height:1.25;
+}
+.book-sub{
+  margin:8px 0 0;
+  font-size:13px;
+  color:var(--ink-soft);
+  letter-spacing:.02em;
+}
+.today-line{
+  margin-top:14px;
+  font-size:13px;
+  letter-spacing:.08em;
+  color:rgba(243,238,223,.85);
+}
+
+/* ---------- 卡 ---------- */
+.kids{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.kids{grid-template-columns:1fr}}
+
+.card{
+  background:var(--paper-2);
+  border:1px solid var(--rule);
+  border-top:5px solid var(--accent);
+  border-radius:var(--radius);
+  padding:18px 16px 16px;
+  box-shadow:0 1px 0 rgba(0,0,0,.04);
+}
+.card[data-kid="hugo"]{--accent:var(--hugo)}
+.card[data-kid="sophie"]{--accent:var(--sophie)}
+
+.card-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.name{
+  font-family:var(--display);
+  font-weight:700;
+  font-size:24px;
+  color:var(--accent);
+  letter-spacing:.02em;
+}
+.today-chip{
+  font-size:12px;
+  color:var(--ink-soft);
+  border:1px dashed var(--rule);
+  border-radius:999px;
+  padding:3px 10px;
+  white-space:nowrap;
+}
+.total{
+  display:flex;align-items:baseline;gap:8px;margin:10px 0 4px;
+}
+.total b{
+  font-family:var(--display);
+  font-size:52px;line-height:1;font-weight:900;
+  font-variant-numeric:tabular-nums;
+}
+.total span{font-size:13px;color:var(--ink-soft);letter-spacing:.1em}
+
+/* ---------- 正字 田字格 ---------- */
+.tally{
+  display:flex;flex-wrap:wrap;gap:5px;
+  margin:12px 0 4px;
+  min-height:42px;
+  align-content:flex-start;
+  max-height:150px;overflow:auto;
+  padding:2px;
+}
+.box{
+  width:40px;height:40px;flex:0 0 40px;
+  border:1px solid var(--grid-red);
+  background-image:
+    repeating-linear-gradient(to bottom,var(--grid-line) 0 3px,transparent 3px 7px),
+    repeating-linear-gradient(to right,var(--grid-line) 0 3px,transparent 3px 7px);
+  background-size:1px 100%,100% 1px;
+  background-position:center center,center center;
+  background-repeat:no-repeat,no-repeat;
+}
+.box svg{display:block;width:100%;height:100%}
+.box rect{fill:var(--accent);shape-rendering:geometricPrecision}
+.tally-empty{font-size:12px;color:var(--ink-soft);padding:11px 2px}
+.owing{
+  font-family:var(--display);font-weight:700;color:var(--stamp);
+  border:2px solid var(--stamp);display:inline-block;padding:6px 12px;
+  transform:rotate(-3deg);font-size:15px;letter-spacing:.08em;
+}
+@media(prefers-reduced-motion:no-preference){
+  .box rect.draw{transform-box:fill-box;animation:.3s cubic-bezier(.32,.72,.34,1) forwards}
+  .box rect.draw.h{transform-origin:left center;animation-name:writeH}
+  .box rect.draw.v{transform-origin:center top;animation-name:writeV}
+}
+@keyframes writeH{from{transform:scaleX(.02)}to{transform:scaleX(1)}}
+@keyframes writeV{from{transform:scaleY(.02)}to{transform:scaleY(1)}}
+
+/* ---------- 按鈕 ---------- */
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+button{font-family:var(--body);cursor:pointer}
+.score-btn{
+  border:1px solid var(--accent);
+  background:#fff;
+  color:var(--accent);
+  border-radius:var(--radius);
+  padding:11px 6px 9px;
+  min-height:62px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  transition:transform .08s ease,background .12s ease;
+}
+.score-btn .n{font-family:var(--display);font-weight:900;font-size:20px;line-height:1}
+.score-btn .t{font-size:12px;letter-spacing:.02em}
+.score-btn:hover{background:color-mix(in srgb,var(--accent) 8%,#fff)}
+.score-btn:active{transform:translateY(2px)}
+.score-btn.big{background:var(--accent);color:#fff}
+.score-btn.big:hover{background:color-mix(in srgb,var(--accent) 85%,#000)}
+
+.minor{display:flex;gap:8px;margin-top:8px}
+.minor button{
+  flex:1;background:none;border:1px dashed var(--rule);color:var(--ink-soft);
+  border-radius:var(--radius);padding:8px;font-size:12px;min-height:38px;
+}
+.minor button:hover{border-color:var(--ink-soft);color:var(--ink)}
+.minor button:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------- 爭執 印章按鈕 ---------- */
+.quarrel{
+  width:100%;margin:18px 0 8px;
+  background:var(--paper-2);
+  border:3px double var(--stamp);
+  color:var(--stamp);
+  border-radius:var(--radius);
+  padding:16px;min-height:70px;
+  font-family:var(--display);font-weight:700;font-size:clamp(16px,3.6vw,20px);
+  letter-spacing:.1em;
+  transition:transform .08s ease,background .12s ease;
+}
+.quarrel small{display:block;font-family:var(--body);font-weight:400;font-size:12px;letter-spacing:.02em;margin-top:5px;opacity:.8}
+.quarrel:hover{background:#fdf1ef}
+.quarrel:active{transform:scale(.985) rotate(-.4deg);background:var(--stamp);color:#fff}
+
+/* ---------- 下面兩欄 ---------- */
+.panels{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;margin-top:22px}
+@media(max-width:720px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--paper-2);border:1px solid var(--rule);border-radius:var(--radius);padding:16px}
+.panel h2{
+  font-family:var(--display);font-size:16px;font-weight:700;margin:0 0 12px;
+  letter-spacing:.08em;padding-bottom:8px;border-bottom:1px solid var(--rule);
+}
+.scroll{max-height:320px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 6px;text-align:left;border-bottom:1px solid var(--rule)}
+th{font-weight:500;color:var(--ink-soft);font-size:12px;letter-spacing:.04em}
+td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.pos{color:var(--book)}
+.neg{color:var(--stamp)}
+.zero{color:var(--ink-soft)}
+
+.log-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--rule);font-size:13px}
+.log-time{color:var(--ink-soft);font-size:11px;white-space:nowrap;padding-top:2px;min-width:74px;font-variant-numeric:tabular-nums}
+.log-main{flex:1;line-height:1.5}
+.chip{
+  display:inline-block;font-size:12px;font-weight:500;padding:1px 7px;border-radius:999px;margin-right:5px;
+  border:1px solid currentColor;
+}
+.chip.hugo{color:var(--hugo)}
+.chip.sophie{color:var(--sophie)}
+.log-why{color:var(--ink-soft);font-size:12px}
+.del{background:none;border:none;color:var(--ink-soft);font-size:15px;line-height:1;padding:3px 5px;border-radius:3px}
+.del:hover{color:var(--stamp);background:#fdf1ef}
+.empty{color:var(--ink-soft);font-size:13px;line-height:1.7;padding:6px 0}
+
+footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px;flex-wrap:wrap}
+.save-state{font-size:12px;color:var(--ink-soft)}
+.reset{background:none;border:1px solid var(--rule);color:var(--ink-soft);border-radius:var(--radius);padding:8px 14px;font-size:12px}
+.reset:hover{border-color:var(--stamp);color:var(--stamp)}
+#soundBtn:hover{border-color:var(--book);color:var(--book)}
+#soundBtn.off{color:var(--ink-soft);opacity:.65}
+.foot-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.reset-prompt[hidden]{display:none}
+.reset-prompt{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  border:1px solid var(--stamp);border-radius:var(--radius);
+  padding:8px 10px;background:#fdf1ef;font-size:12px;color:var(--stamp);
+}
+.reset-prompt button{border-radius:var(--radius);font-size:12px;padding:7px 12px;border:1px solid var(--stamp)}
+.reset-yes{background:var(--stamp);color:#fff}
+.reset-yes:hover{background:#a2261d}
+.reset-no{background:none;color:var(--stamp)}
+.reset-no:hover{background:#f8e2de}
+
+:focus-visible{outline:2px solid var(--book);outline-offset:2px}
+
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
+  background:var(--ink);color:var(--paper);padding:11px 20px;border-radius:999px;
+  font-size:14px;letter-spacing:.04em;opacity:0;pointer-events:none;transition:.24s ease;z-index:9;
+  box-shadow:0 6px 20px rgba(0,0,0,.18);
+}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="book-label">
+    <h1>Hugo 與 Sophie 表現分數簿</h1>
+    <p class="book-sub">由 2026 年 8 月 1 日開始記錄 · 每滿 5 分寫一個「正」字</p>
+  </div>
+  <div class="today-line" id="todayLine"></div>
+</header>
+
+<main class="kids" id="kids"></main>
+
+<button class="quarrel" id="quarrelBtn">
+  發生爭執 — 兩人各扣 5 分
+  <small>一個巴掌拍不響，故此兩人同時扣分</small>
+</button>
+
+<div class="panels">
+  <section class="panel">
+    <h2>每日總結</h2>
+    <div class="scroll" id="dailyBox"></div>
+  </section>
+  <section class="panel">
+    <h2>加減紀錄</h2>
+    <div class="scroll" id="logBox"></div>
+  </section>
+</div>
+
+<footer>
+  <span class="save-state" id="saveState">載入中…</span>
+  <div class="foot-btns">
+  <button class="reset" id="soundBtn" aria-pressed="false">音效：開</button>
+  <button class="reset" id="resetBtn">清空所有紀錄</button>
+  <div class="reset-prompt" id="resetPrompt" hidden>
+    <span>確定清空？兩人由 0 分重新開始，無法復原。</span>
+    <button class="reset-yes" id="resetYes">確定清空</button>
+    <button class="reset-no" id="resetNo">取消</button>
+  </div>
+  </div>
+</footer>
+
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+var KEY = "hugo_sophie_score_v1";
+var START = "2026-08-01";
+var KIDS = [{id:"hugo",name:"Hugo"},{id:"sophie",name:"Sophie"}];
+var events = [];
+var flash = null;
+
+/* ---------- 儲存：優先用內置儲存，否則用瀏覽器本機儲存 ---------- */
+var Store = {
+  mode:"memory",
+  load:async function(){
+    try{
+      if(window.storage){
+        var r = await window.storage.get(KEY,false);
+        Store.mode="cloud";
+        return r && r.value ? JSON.parse(r.value) : [];
+      }
+    }catch(e){ if(window.storage){ Store.mode="cloud"; return []; } }
+    try{
+      var raw = window.localStorage.getItem(KEY);
+      Store.mode="local";
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  },
+  save:async function(data){
+    var v = JSON.stringify(data);
+    var ok = false;
+    try{ if(window.storage){ await window.storage.set(KEY,v,false); ok = true; } }catch(e){}
+    try{ window.localStorage.setItem(KEY,v); ok = true; }catch(e){}
+    return ok;
+  }
+};
+
+/* ---------- 日期 ---------- */
+function dayKey(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function prettyDay(k){
+  var p = k.split("-");
+  return Number(p[1])+"月"+Number(p[2])+"日";
+}
+var WEEK = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+function weekday(k){
+  var p = k.split("-");
+  return WEEK[new Date(Number(p[0]),Number(p[1])-1,Number(p[2])).getDay()];
+}
+function clock(ts){
+  var d = new Date(ts);
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+
+/* ---------- 「正」字 ---------- */
+/* 「正」五筆，按書寫順序：① 上橫 ② 中間長豎 ③ 中橫 ④ 左短豎 ⑤ 底橫
+   直畫比橫畫稍粗，底橫最闊，收筆用方角，接近黑體字形 */
+var STROKES = [
+  {x:24,y:18,w:52,h:8, d:"h"},
+  {x:41,y:18,w:9, h:62,d:"v"},
+  {x:41,y:45,w:38,h:8, d:"h"},
+  {x:20,y:45,w:9, h:35,d:"v"},
+  {x:12,y:72,w:76,h:8, d:"h"}
+];
+function tallyHTML(total,animate){
+  if(total <= 0){
+    if(total === 0) return '<div class="tally-empty">尚未開始計分</div>';
+    return '<div class="owing">欠 '+Math.abs(total)+' 分</div>';
+  }
+  var boxes = [], left = total, i = 0, capped = false;
+  while(left > 0){
+    if(i >= 80){ capped = true; break; }
+    var n = Math.min(5,left); left -= n; i++;
+    var paths = "";
+    for(var s=0;s<n;s++){
+      var k = STROKES[s];
+      var isLast = (left === 0 && s === n-1 && animate);
+      paths += '<rect x="'+k.x+'" y="'+k.y+'" width="'+k.w+'" height="'+k.h+'" rx="1"'+
+               (isLast ? ' class="draw '+k.d+'"' : '')+'/>';
+    }
+    boxes.push('<div class="box"><svg viewBox="0 0 100 100" aria-hidden="true">'+paths+'</svg></div>');
+  }
+  return boxes.join("") + (capped ? '<div class="tally-empty">…還有更多</div>' : '');
+}
+
+/* ---------- 計數 ---------- */
+function valid(){ return events.filter(function(e){ return e.day >= START; }); }
+function totalOf(kid){ return valid().reduce(function(a,e){ return a + (e.kid===kid ? e.delta : 0); },0); }
+function todayOf(kid){
+  var t = dayKey(new Date());
+  return valid().reduce(function(a,e){ return a + (e.kid===kid && e.day===t ? e.delta : 0); },0);
+}
+function signed(n){ return (n>0?"+":"") + n; }
+function cls(n){ return n>0 ? "pos" : (n<0 ? "neg" : "zero"); }
+
+/* ---------- 加減 ---------- */
+function add(entries,reason){
+  if(entries.length > 1){ Sound.quarrel(); }
+  else if(entries[0].delta === 1){ Sound.one(entries[0].kid); }
+  else if(entries[0].delta === 5){ Sound.five(entries[0].kid); }
+  else if(entries[0].delta === 10){ Sound.ten(entries[0].kid); }
+  else { Sound.minus(entries[0].kid); }
+  var now = Date.now(), gid = "g"+now+Math.random().toString(36).slice(2,6), day = dayKey(new Date());
+  entries.forEach(function(x){
+    events.push({gid:gid,kid:x.kid,delta:x.delta,reason:reason,ts:now,day:day});
+  });
+  flash = entries.length===1 && entries[0].delta>0 ? entries[0].kid : null;
+  persist();
+  render();
+  flash = null;
+  toast(entries.map(function(x){
+    return (x.kid==="hugo"?"Hugo":"Sophie")+" "+signed(x.delta)+" 分";
+  }).join("，"));
+}
+function removeGroup(gid){
+  Sound.undo();
+  events = events.filter(function(e){ return e.gid !== gid; });
+  persist(); render(); toast("已刪除一項紀錄");
+}
+function undoLast(kid){
+  var mine = events.filter(function(e){ return e.kid===kid; });
+  if(!mine.length) return;
+  removeGroup(mine[mine.length-1].gid);
+}
+
+var saveState = document.getElementById("saveState");
+function persist(){
+  Store.save(events).then(function(ok){
+    saveState.textContent = ok
+      ? "已自動儲存 · 重新開啟仍會保留（共 "+valid().length+" 項紀錄）"
+      : "此裝置無法儲存，關閉頁面後分數會遺失";
+  });
+}
+
+var toastEl = document.getElementById("toast"), toastTimer;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.classList.remove("on"); },1900);
+}
+
+/* ---------- 音效：用五聲音階合成，唔使外部檔案 ---------- */
+var Sound = (function(){
+  var ctx = null, master = null, muted = false;
+  var MKEY = KEY + "_mute";
+  try{ muted = window.localStorage.getItem(MKEY) === "1"; }catch(e){}
+
+  function ac(){
+    if(!ctx){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return null;
+      try{
+        ctx = new AC();
+        master = ctx.createGain();
+        master.gain.value = 0.5;
+        master.connect(ctx.destination);
+      }catch(e){ return null; }
+    }
+    if(ctx.state === "suspended"){ try{ ctx.resume(); }catch(e){} }
+    return ctx;
+  }
+
+  /* 木琴式撥奏：基音 + 第四泛音，快起慢收 */
+  function pluck(f,at,dur,vol,type){
+    var c = ac(); if(!c) return;
+    var t = c.currentTime + at;
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    g.connect(master);
+    var o = c.createOscillator();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(f,t);
+    o.connect(g); o.start(t); o.stop(t+dur+0.03);
+
+    var g2 = c.createGain();
+    g2.gain.setValueAtTime(0.0001,t);
+    g2.gain.linearRampToValueAtTime(vol*0.2,t+0.005);
+    g2.gain.exponentialRampToValueAtTime(0.0001,t+dur*0.4);
+    g2.connect(master);
+    var o2 = c.createOscillator();
+    o2.type = "sine";
+    o2.frequency.setValueAtTime(f*4,t);
+    o2.connect(g2); o2.start(t); o2.stop(t+dur+0.03);
+  }
+
+  /* 木魚式起音：極短噪音經帶通濾波 */
+  function knock(at,vol,freq,len){
+    var c = ac(); if(!c) return;
+    var t = c.currentTime + at;
+    len = len || 0.05;
+    var n = Math.max(1,Math.floor(c.sampleRate*len));
+    var buf = c.createBuffer(1,n,c.sampleRate);
+    var d = buf.getChannelData(0);
+    for(var i=0;i<n;i++){ d[i] = (Math.random()*2-1)*Math.pow(1-i/n,6); }
+    var src = c.createBufferSource(); src.buffer = buf;
+    var bp = c.createBiquadFilter();
+    bp.type = "bandpass"; bp.frequency.value = freq || 1900; bp.Q.value = 1.3;
+    var g = c.createGain(); g.gain.value = vol;
+    src.connect(bp); bp.connect(g); g.connect(master);
+    src.start(t);
+  }
+
+  /* 五聲音階（宮商角徵羽），每個小朋友差一個四度，聽聲就知邊個加分 */
+  var PENT = {C5:523.25,D5:587.33,E5:659.25,G5:783.99,A5:880.00,C6:1046.50,D6:1174.66,E6:1318.51,G6:1567.98};
+  function reg(kid){ return kid === "sophie" ? 1.3348 : 1; }
+
+  var api = {
+    isMuted:function(){ return muted; },
+    toggle:function(){
+      muted = !muted;
+      try{ window.localStorage.setItem(MKEY,muted?"1":"0"); }catch(e){}
+      if(!muted) api.tap();
+      return muted;
+    },
+    /* 加 1 分：一下清脆木琴 */
+    one:function(kid){
+      if(muted) return; var r = reg(kid);
+      knock(0,0.16,2300);
+      pluck(PENT.E5*r,0,0.30,0.26);
+    },
+    /* 加 5 分：上行兩音，寫成一個「正」字 */
+    five:function(kid){
+      if(muted) return; var r = reg(kid);
+      knock(0,0.14,2100);
+      pluck(PENT.G5*r,0,0.34,0.24);
+      pluck(PENT.C6*r,0.085,0.42,0.22);
+    },
+    /* 加 10 分：三音琶音加高音餘韻 */
+    ten:function(kid){
+      if(muted) return; var r = reg(kid);
+      knock(0,0.18,2600);
+      pluck(PENT.C6*r,0,0.34,0.24);
+      pluck(PENT.E6*r,0.075,0.36,0.22);
+      pluck(PENT.G6*r,0.150,0.60,0.22);
+      pluck(PENT.C6*r*2,0.30,0.85,0.055);
+      pluck(PENT.G6*r*2,0.38,0.75,0.040);
+    },
+    /* 個別扣分：下行兩音，柔和唔嚇人 */
+    minus:function(kid){
+      if(muted) return; var r = reg(kid);
+      knock(0,0.10,900);
+      pluck(PENT.A5*r/2,0,0.40,0.20,"triangle");
+      pluck(PENT.E5*r/2,0.095,0.55,0.18,"triangle");
+    },
+    /* 爭執：兩下低沉木魚，帶少少不和諧 */
+    quarrel:function(){
+      if(muted) return;
+      knock(0,0.22,260,0.09);
+      pluck(146.83,0,0.55,0.22,"triangle");
+      pluck(138.59,0.01,0.35,0.10,"triangle");
+      knock(0.20,0.20,220,0.09);
+      pluck(110.00,0.20,0.75,0.22,"triangle");
+    },
+    /* 撤銷／刪除：一下輕輕收筆 */
+    undo:function(){
+      if(muted) return;
+      knock(0,0.09,1500,0.035);
+      pluck(PENT.D5/2,0,0.20,0.13,"triangle");
+    },
+    /* 清空：五聲音階下行 */
+    clear:function(){
+      if(muted) return;
+      var seq = [PENT.A5,PENT.G5,PENT.E5,PENT.D5,PENT.C5];
+      for(var i=0;i<seq.length;i++){ pluck(seq[i],i*0.075,0.45,0.17,"triangle"); }
+    },
+    /* 一般按鍵 */
+    tap:function(){
+      if(muted) return;
+      knock(0,0.07,1700,0.03);
+      pluck(PENT.G5,0,0.12,0.09);
+    }
+  };
+  return api;
+})();
+function render(){
+  var t = dayKey(new Date());
+  document.getElementById("todayLine").textContent = "今日：" + prettyDay(t) + " " + weekday(t);
+
+  document.getElementById("kids").innerHTML = KIDS.map(function(k){
+    var total = totalOf(k.id), today = todayOf(k.id);
+    var has = events.some(function(e){ return e.kid===k.id; });
+    return ''+
+    '<section class="card" data-kid="'+k.id+'">'+
+      '<div class="card-top">'+
+        '<span class="name">'+k.name+'</span>'+
+        '<span class="today-chip">今日 <b class="'+cls(today)+'">'+signed(today)+'</b> 分</span>'+
+      '</div>'+
+      '<div class="total"><b style="color:var(--accent)">'+total+'</b><span>總分</span></div>'+
+      '<div class="tally" aria-label="'+k.name+' 共 '+total+' 分">'+tallyHTML(total,flash===k.id)+'</div>'+
+      '<div class="btns">'+
+        '<button class="score-btn" data-act="add" data-kid="'+k.id+'" data-d="1"><span class="n">+1</span><span class="t">表現良好</span></button>'+
+        '<button class="score-btn" data-act="add" data-kid="'+k.id+'" data-d="5"><span class="n">+5</span><span class="t">表現優秀</span></button>'+
+        '<button class="score-btn big" data-act="add" data-kid="'+k.id+'" data-d="10"><span class="n">+10</span><span class="t">表現卓越</span></button>'+
+      '</div>'+
+      '<div class="minor">'+
+        '<button data-act="add" data-kid="'+k.id+'" data-d="-5">個別扣 5 分</button>'+
+        '<button data-act="undo" data-kid="'+k.id+'"'+(has?"":" disabled")+'>撤銷最後一次</button>'+
+      '</div>'+
+    '</section>';
+  }).join("");
+
+  renderDaily();
+  renderLog();
+}
+
+function renderDaily(){
+  var rows = {}, list = valid();
+  list.forEach(function(e){
+    if(!rows[e.day]) rows[e.day] = {hugo:0,sophie:0};
+    rows[e.day][e.kid] += e.delta;
+  });
+  var days = Object.keys(rows).sort().reverse();
+  var box = document.getElementById("dailyBox");
+  if(!days.length){
+    box.innerHTML = '<p class="empty">由 8 月 1 日開始，每日的加減會在此總結。</p>';
+    return;
+  }
+  box.innerHTML =
+    '<table><thead><tr><th>日子</th><th style="text-align:right">Hugo</th><th style="text-align:right">Sophie</th></tr></thead><tbody>'+
+    days.map(function(d){
+      return '<tr><td>'+prettyDay(d)+' <span style="color:var(--ink-soft);font-size:11px">'+weekday(d)+'</span></td>'+
+        '<td class="num '+cls(rows[d].hugo)+'">'+signed(rows[d].hugo)+'</td>'+
+        '<td class="num '+cls(rows[d].sophie)+'">'+signed(rows[d].sophie)+'</td></tr>';
+    }).join("")+'</tbody></table>';
+}
+
+function renderLog(){
+  var groups = [], map = {};
+  valid().forEach(function(e){
+    if(!map[e.gid]){ map[e.gid] = {gid:e.gid,ts:e.ts,day:e.day,reason:e.reason,items:[]}; groups.push(map[e.gid]); }
+    map[e.gid].items.push(e);
+  });
+  groups.reverse();
+  var box = document.getElementById("logBox");
+  if(!groups.length){
+    box.innerHTML = '<p class="empty">暫無紀錄。<br>他們表現良好時，按上面的按鈕加分。</p>';
+    return;
+  }
+  box.innerHTML = groups.slice(0,200).map(function(g){
+    var chips = g.items.map(function(e){
+      var nm = e.kid==="hugo" ? "Hugo" : "Sophie";
+      return '<span class="chip '+e.kid+'">'+nm+' '+signed(e.delta)+'</span>';
+    }).join("");
+    return '<div class="log-row">'+
+      '<span class="log-time">'+prettyDay(g.day)+'<br>'+clock(g.ts)+'</span>'+
+      '<span class="log-main">'+chips+'<span class="log-why">'+g.reason+'</span></span>'+
+      '<button class="del" data-act="del" data-gid="'+g.gid+'" title="刪除此項" aria-label="刪除此項">✕</button>'+
+    '</div>';
+  }).join("");
+}
+
+/* ---------- 按鈕 ---------- */
+var REASON = {"1":"表現良好","5":"表現優秀","10":"表現卓越","-5":"個別扣分"};
+document.addEventListener("click",function(ev){
+  var b = ev.target.closest("[data-act]");
+  if(!b) return;
+  var act = b.getAttribute("data-act");
+  if(act === "add"){
+    var d = Number(b.getAttribute("data-d"));
+    add([{kid:b.getAttribute("data-kid"),delta:d}], REASON[String(d)]);
+  } else if(act === "undo"){
+    undoLast(b.getAttribute("data-kid"));
+  } else if(act === "del"){
+    removeGroup(b.getAttribute("data-gid"));
+  }
+});
+
+document.getElementById("quarrelBtn").addEventListener("click",function(){
+  add([{kid:"hugo",delta:-5},{kid:"sophie",delta:-5}],"發生爭執");
+});
+
+var soundBtn = document.getElementById("soundBtn");
+function paintSound(){
+  var m = Sound.isMuted();
+  soundBtn.textContent = m ? "音效：關" : "音效：開";
+  soundBtn.setAttribute("aria-pressed", m ? "true" : "false");
+  soundBtn.classList.toggle("off", m);
+}
+soundBtn.addEventListener("click",function(){ Sound.toggle(); paintSound(); });
+paintSound();
+
+var resetBtn = document.getElementById("resetBtn");
+var resetPrompt = document.getElementById("resetPrompt");
+var resetTimer;
+function closeReset(){
+  clearTimeout(resetTimer);
+  resetPrompt.hidden = true;
+  resetBtn.hidden = false;
+}
+resetBtn.addEventListener("click",function(){
+  Sound.tap();
+  if(!valid().length){ toast("目前沒有紀錄可以清空"); return; }
+  resetBtn.hidden = true;
+  resetPrompt.hidden = false;
+  document.getElementById("resetYes").focus();
+  clearTimeout(resetTimer);
+  resetTimer = setTimeout(closeReset,12000);
+});
+document.getElementById("resetNo").addEventListener("click",function(){ Sound.tap(); closeReset(); });
+document.getElementById("resetYes").addEventListener("click",function(){
+  Sound.clear();
+  events = [];
+  persist(); render(); closeReset();
+  toast("已清空，重新開始");
+});
+
+/* ---------- 啟動 ---------- */
+Store.load().then(function(data){
+  events = Array.isArray(data) ? data : [];
+  render();
+  saveState.textContent = "已自動儲存 · 重新開啟仍會保留（共 "+valid().length+" 項紀錄）";
+}).catch(function(){
+  events = []; render();
+});
+})();
+</script>
+</body>
+</html>
