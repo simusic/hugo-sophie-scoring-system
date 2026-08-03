@@ -261,7 +261,7 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:12px;ma
 <header>
   <div class="book-label">
     <h1>Hugo 與 Sophie 表現分數簿</h1>
-    <p class="book-sub">由 2026 年 8 月 1 日開始記錄 · 每滿 5 分寫一個「正」字</p>
+    <p class="book-sub">由 2026 年 8 月 1 日開始記錄 · 每滿 5 分寫一個「正」字 · 分數在各裝置共通</p>
   </div>
   <div class="today-line" id="todayLine"></div>
 </header>
@@ -287,6 +287,7 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:12px;ma
 <footer>
   <span class="save-state" id="saveState">載入中…</span>
   <div class="foot-btns">
+  <button class="reset" id="refreshBtn">重新載入分數</button>
   <button class="reset" id="soundBtn" aria-pressed="false">音效：開</button>
   <button class="reset" id="resetBtn">清空所有紀錄</button>
   <div class="reset-prompt" id="resetPrompt" hidden>
@@ -310,29 +311,61 @@ var KIDS = [{id:"hugo",name:"Hugo"},{id:"sophie",name:"Sophie"}];
 var events = [];
 var flash = null;
 
-/* ---------- 儲存：優先用內置儲存，否則用瀏覽器本機儲存 ---------- */
+/* ---------- 儲存：雲端為主，本機留一份備份 ----------
+   分數存放在自己的 Firebase 資料庫，任何裝置開啟頁面都會取得最新分數。
+   若暫時無法連線，會先存於本機，回復連線後自動補回。 */
+var CLOUD = "https://hugo-sophie-scoring-system-default-rtdb.asia-southeast1.firebasedatabase.app/scores.json";
 var Store = {
-  mode:"memory",
-  load:async function(){
-    try{
-      if(window.storage){
-        var r = await window.storage.get(KEY,false);
-        Store.mode="cloud";
-        return r && r.value ? JSON.parse(r.value) : [];
-      }
-    }catch(e){ if(window.storage){ Store.mode="cloud"; return []; } }
+  online:false,   /* 上一次是否成功接通雲端 */
+  dirty:false,    /* 有改動仍未成功寫上雲端 */
+  seq:0,          /* 連續按鍵時，只讓最後一次的結果作準 */
+  toList:function(data){
+    if(Array.isArray(data)) return data.filter(Boolean);
+    if(data && typeof data === "object"){
+      return Object.keys(data).map(function(k){ return data[k]; }).filter(Boolean);
+    }
+    return [];
+  },
+  readLocal:function(){
     try{
       var raw = window.localStorage.getItem(KEY);
-      Store.mode="local";
-      return raw ? JSON.parse(raw) : [];
+      return raw ? Store.toList(JSON.parse(raw)) : [];
     }catch(e){ return []; }
   },
+  writeLocal:function(data){
+    try{ window.localStorage.setItem(KEY,JSON.stringify(data)); }catch(e){}
+  },
+  load:async function(){
+    try{
+      var res = await fetch(CLOUD + "?_=" + Date.now(), {cache:"no-store"});
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      var list = Store.toList(await res.json());
+      Store.online = true;
+      Store.writeLocal(list);
+      return list;
+    }catch(e){
+      Store.online = false;
+      return Store.readLocal();
+    }
+  },
   save:async function(data){
-    var v = JSON.stringify(data);
-    var ok = false;
-    try{ if(window.storage){ await window.storage.set(KEY,v,false); ok = true; } }catch(e){}
-    try{ window.localStorage.setItem(KEY,v); ok = true; }catch(e){}
-    return ok;
+    Store.writeLocal(data);
+    var my = ++Store.seq;
+    try{
+      var res = await fetch(CLOUD, {
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(data)
+      });
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      if(my !== Store.seq) return "stale";   /* 已有更新的一次寫入，這次不用理會 */
+      Store.online = true; Store.dirty = false;
+      return "cloud";
+    }catch(e){
+      if(my !== Store.seq) return "stale";
+      Store.online = false; Store.dirty = true;
+      return "local";
+    }
   }
 };
 
@@ -427,10 +460,12 @@ function undoLast(kid){
 
 var saveState = document.getElementById("saveState");
 function persist(){
-  Store.save(events).then(function(ok){
-    saveState.textContent = ok
-      ? "已自動儲存 · 重新開啟仍會保留（共 "+valid().length+" 項紀錄）"
-      : "此裝置無法儲存，關閉頁面後分數會遺失";
+  saveState.textContent = "儲存中…";
+  Store.save(events).then(function(r){
+    if(r === "stale") return;
+    saveState.textContent = r === "cloud"
+      ? "已同步到雲端 · 其他裝置開啟即見（共 "+valid().length+" 項紀錄）"
+      : "暫時未能連線，已存於此裝置（共 "+valid().length+" 項紀錄），回復網絡後會自動補回";
   });
 }
 
@@ -709,11 +744,61 @@ document.getElementById("resetYes").addEventListener("click",function(){
   toast("已清空，重新開始");
 });
 
+/* ---------- 重新載入雲端最新分數 ---------- */
+var loading = false;
+function refresh(manual){
+  if(loading) return;
+  loading = true;
+  if(manual) saveState.textContent = "載入中…";
+  Store.load().then(function(list){
+    loading = false;
+    if(!Store.online){
+      saveState.textContent = "未能連接雲端，現時顯示此裝置的紀錄";
+      if(manual) toast("未能連接雲端");
+      return;
+    }
+    var changed = JSON.stringify(list) !== JSON.stringify(events);
+    if(changed){
+      events = list;
+      render();
+      toast("已載入最新分數");
+    } else if(manual){
+      toast("已是最新分數");
+    }
+    saveState.textContent = "已同步 · 分數存於雲端（共 "+valid().length+" 項紀錄）";
+  }).catch(function(){ loading = false; });
+}
+
+/* 回到此頁或網絡回復時：有未儲存的改動就補寫，否則取回最新分數 */
+function resync(){
+  if(Store.dirty) persist();
+  else refresh(false);
+}
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState === "visible") resync();
+});
+window.addEventListener("online",resync);
+
+document.getElementById("refreshBtn").addEventListener("click",function(){
+  Sound.tap();
+  refresh(true);
+});
+
 /* ---------- 啟動 ---------- */
-Store.load().then(function(data){
-  events = Array.isArray(data) ? data : [];
+var backup = Store.readLocal();   /* 先記下此裝置原有紀錄，以免被空的雲端蓋過 */
+Store.load().then(function(list){
+  if(Store.online && !list.length && backup.length){
+    events = backup;
+    render();
+    persist();
+    toast("已將此裝置原有紀錄搬上雲端");
+    return;
+  }
+  events = Array.isArray(list) ? list : [];
   render();
-  saveState.textContent = "已自動儲存 · 重新開啟仍會保留（共 "+valid().length+" 項紀錄）";
+  saveState.textContent = Store.online
+    ? "已同步 · 分數存於雲端（共 "+valid().length+" 項紀錄）"
+    : "未能連接雲端，現時顯示此裝置的紀錄（共 "+valid().length+" 項紀錄）";
 }).catch(function(){
   events = []; render();
 });
