@@ -105,50 +105,54 @@ h1{
   padding:3px 10px;
   white-space:nowrap;
 }
-.total{
-  display:flex;align-items:baseline;gap:8px;margin:10px 0 4px;
+/* 分數細細地放埋一邊，主角是水果 */
+.score-quiet{
+  margin:8px 0 2px;font-size:12px;color:var(--ink-soft);
+  letter-spacing:.06em;font-variant-numeric:tabular-nums;
 }
-.total b{
-  font-family:var(--display);
-  font-size:52px;line-height:1;font-weight:900;
-  font-variant-numeric:tabular-nums;
-}
-.total span{font-size:13px;color:var(--ink-soft);letter-spacing:.1em}
 
-/* ---------- 正字 田字格 ---------- */
-.tally{
-  display:flex;flex-wrap:wrap;gap:5px;
-  margin:12px 0 4px;
-  min-height:42px;
+/* ---------- 水果籃 ---------- */
+.fruits{
+  display:flex;flex-wrap:wrap;gap:3px;
+  margin:6px 0 4px;
+  min-height:52px;
   align-content:flex-start;
-  max-height:150px;overflow:auto;
-  padding:2px;
+  max-height:196px;overflow:auto;
+  padding:4px 2px;
+  font-size:29px;line-height:1.12;
 }
-.box{
-  width:40px;height:40px;flex:0 0 40px;
-  border:1px solid var(--grid-red);
-  background-image:
-    repeating-linear-gradient(to bottom,var(--grid-line) 0 3px,transparent 3px 7px),
-    repeating-linear-gradient(to right,var(--grid-line) 0 3px,transparent 3px 7px);
-  background-size:1px 100%,100% 1px;
-  background-position:center center,center center;
-  background-repeat:no-repeat,no-repeat;
-}
-.box svg{display:block;width:100%;height:100%}
-.box rect{fill:var(--accent);shape-rendering:geometricPrecision}
-.tally-empty{font-size:12px;color:var(--ink-soft);padding:11px 2px}
+.fruits span{display:inline-block}
+.fruits span.big{font-size:37px}
+.fruits-empty{font-size:12px;color:var(--ink-soft);padding:16px 2px}
 .owing{
   font-family:var(--display);font-weight:700;color:var(--stamp);
   border:2px solid var(--stamp);display:inline-block;padding:6px 12px;
   transform:rotate(-3deg);font-size:15px;letter-spacing:.08em;
 }
+.owing em{font-style:normal;font-size:20px}
 @media(prefers-reduced-motion:no-preference){
-  .box rect.draw{transform-box:fill-box;animation:.3s cubic-bezier(.32,.72,.34,1) forwards}
-  .box rect.draw.h{transform-origin:left center;animation-name:writeH}
-  .box rect.draw.v{transform-origin:center top;animation-name:writeV}
+  .fruits span.pop{animation:pop .44s cubic-bezier(.2,1.45,.4,1)}
 }
-@keyframes writeH{from{transform:scaleX(.02)}to{transform:scaleX(1)}}
-@keyframes writeV{from{transform:scaleY(.02)}to{transform:scaleY(1)}}
+@keyframes pop{
+  0%{transform:scale(0) rotate(-30deg)}
+  62%{transform:scale(1.28) rotate(8deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+
+/* ---------- 禮物表 ---------- */
+.gift-row{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:11px 0;border-bottom:1px dashed var(--rule);
+}
+.gift-row:last-child{border-bottom:none}
+.gift-fruit{font-size:22px;letter-spacing:1px;white-space:nowrap}
+.gift-name{
+  font-family:var(--display);font-weight:700;font-size:16px;
+  letter-spacing:.06em;white-space:nowrap;
+}
+.gift-prog{margin-left:auto;text-align:right;font-size:12px;color:var(--ink-soft);line-height:1.9}
+.gift-prog .f{font-size:15px;letter-spacing:1px}
+.ready{color:var(--book);font-weight:700}
 
 /* ---------- 按鈕 ---------- */
 .btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
@@ -163,7 +167,7 @@ button{font-family:var(--body);cursor:pointer}
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   transition:transform .08s ease,background .12s ease;
 }
-.score-btn .n{font-family:var(--display);font-weight:900;font-size:20px;line-height:1}
+.score-btn .n{font-size:27px;line-height:1.05}
 .score-btn .t{font-size:12px;letter-spacing:.02em}
 .score-btn:hover{background:color-mix(in srgb,var(--accent) 8%,#fff)}
 .score-btn:active{transform:translateY(2px)}
@@ -193,6 +197,46 @@ button{font-family:var(--body);cursor:pointer}
 .quarrel small{display:block;font-family:var(--body);font-weight:400;font-size:12px;letter-spacing:.02em;margin-top:5px;opacity:.8}
 .quarrel:hover{background:#fdf1ef}
 .quarrel:active{transform:scale(.985) rotate(-.4deg);background:var(--stamp);color:#fff}
+.quarrel .qf{font-size:22px;letter-spacing:2px}
+
+/* ---------- 爭執：全頁震動 + 大印章 ---------- */
+/* 震動只加在內容區：若加在 body，其 transform 會令 position:fixed 的
+   爆炸畫面改為相對整份文件定位，頁面捲動後就會看不到。 */
+@media(prefers-reduced-motion:no-preference){
+  .wrap.shake{animation:shake .62s cubic-bezier(.36,.07,.19,.97) both}
+}
+@keyframes shake{
+  10%,90%{transform:translate3d(-4px,0,0)}
+  20%,80%{transform:translate3d(7px,0,0)}
+  30%,50%,70%{transform:translate3d(-12px,0,0)}
+  40%,60%{transform:translate3d(12px,0,0)}
+}
+#boom{
+  position:fixed;inset:0;z-index:20;pointer-events:none;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(191,48,37,.16);
+}
+#boom.on{display:flex}
+.boom-card{
+  background:var(--paper-2);border:6px double var(--stamp);color:var(--stamp);
+  padding:24px 30px 22px;text-align:center;transform:rotate(-4deg);
+  box-shadow:0 12px 44px rgba(0,0,0,.28);max-width:86vw;
+}
+.boom-emoji{font-size:clamp(44px,13vw,66px);line-height:1;letter-spacing:2px}
+.boom-title{
+  font-family:var(--display);font-weight:900;letter-spacing:.14em;
+  font-size:clamp(21px,6.2vw,32px);margin-top:10px;
+}
+.boom-sub{font-size:clamp(13px,3.4vw,15px);margin-top:8px;letter-spacing:.04em}
+.boom-sub .f{font-size:19px;letter-spacing:2px}
+@media(prefers-reduced-motion:no-preference){
+  #boom.on .boom-card{animation:boomIn .52s cubic-bezier(.2,1.5,.4,1) both}
+}
+@keyframes boomIn{
+  0%{transform:scale(.25) rotate(-24deg);opacity:0}
+  68%{transform:scale(1.14) rotate(4deg);opacity:1}
+  100%{transform:scale(1) rotate(-4deg);opacity:1}
+}
 
 /* ---------- 下面兩欄 ---------- */
 .panels{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;margin-top:22px}
@@ -261,7 +305,7 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:12px;ma
 <header>
   <div class="book-label">
     <h1>Hugo 與 Sophie 表現分數簿</h1>
-    <p class="book-sub">由 2026 年 8 月 1 日開始記錄 · 每滿 5 分寫一個「正」字 · 分數在各裝置共通</p>
+    <p class="book-sub">由 2026 年 8 月 1 日開始儲水果 · 儲夠水果可以換禮物 · 各裝置共通</p>
   </div>
   <div class="today-line" id="todayLine"></div>
 </header>
@@ -269,9 +313,14 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:12px;ma
 <main class="kids" id="kids"></main>
 
 <button class="quarrel" id="quarrelBtn">
-  發生爭執 — 兩人各扣 5 分
-  <small>一個巴掌拍不響，故此兩人同時扣分</small>
+  發生爭執 — 兩人各沒收 <span class="qf">🍇</span>
+  <small>一個巴掌拍不響，故此兩人同時沒收</small>
 </button>
+
+<section class="panel" style="margin-top:18px">
+  <h2>禮物表</h2>
+  <div id="giftBox"></div>
+</section>
 
 <div class="panels">
   <section class="panel">
@@ -287,17 +336,25 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:12px;ma
 <footer>
   <span class="save-state" id="saveState">載入中…</span>
   <div class="foot-btns">
-  <button class="reset" id="refreshBtn">重新載入分數</button>
+  <button class="reset" id="refreshBtn">重新載入水果</button>
   <button class="reset" id="soundBtn" aria-pressed="false">音效：開</button>
   <button class="reset" id="resetBtn">清空所有紀錄</button>
   <div class="reset-prompt" id="resetPrompt" hidden>
-    <span>確定清空？兩人由 0 分重新開始，無法復原。</span>
+    <span>確定清空？兩人的水果會全部沒有，無法復原。</span>
     <button class="reset-yes" id="resetYes">確定清空</button>
     <button class="reset-no" id="resetNo">取消</button>
   </div>
   </div>
 </footer>
 
+</div>
+
+<div id="boom" aria-hidden="true">
+  <div class="boom-card">
+    <div class="boom-emoji">💥🍇💔🍇💥</div>
+    <div class="boom-title">爭 執 了</div>
+    <div class="boom-sub">兩人各沒收 <span class="f">🍇</span>　一個巴掌拍不響</div>
+  </div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -387,36 +444,47 @@ function clock(ts){
   return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 }
 
-/* ---------- 「正」字 ---------- */
-/* 「正」五筆，按書寫順序：① 上橫 ② 中間長豎 ③ 中橫 ④ 左短豎 ⑤ 底橫
-   直畫比橫畫稍粗，底橫最闊，收筆用方角，接近黑體字形 */
-var STROKES = [
-  {x:24,y:18,w:52,h:8, d:"h"},
-  {x:41,y:18,w:9, h:62,d:"v"},
-  {x:41,y:45,w:38,h:8, d:"h"},
-  {x:20,y:45,w:9, h:35,d:"v"},
-  {x:12,y:72,w:76,h:8, d:"h"}
+/* ---------- 水果 ----------
+   分數換成水果：儲夠細的自動變成大的，孩子看到的是水果，不是數字。 */
+var FRUITS = [
+  {emoji:"🥭",value:50,name:"芒果"},
+  {emoji:"🍉",value:10,name:"西瓜"},
+  {emoji:"🍇",value:5, name:"提子"},
+  {emoji:"🍌",value:1, name:"香蕉"}
 ];
-function tallyHTML(total,animate){
-  if(total <= 0){
-    if(total === 0) return '<div class="tally-empty">尚未開始計分</div>';
-    return '<div class="owing">欠 '+Math.abs(total)+' 分</div>';
-  }
-  var boxes = [], left = total, i = 0, capped = false;
-  while(left > 0){
-    if(i >= 80){ capped = true; break; }
-    var n = Math.min(5,left); left -= n; i++;
-    var paths = "";
-    for(var s=0;s<n;s++){
-      var k = STROKES[s];
-      var isLast = (left === 0 && s === n-1 && animate);
-      paths += '<rect x="'+k.x+'" y="'+k.y+'" width="'+k.w+'" height="'+k.h+'" rx="1"'+
-               (isLast ? ' class="draw '+k.d+'"' : '')+'/>';
-    }
-    boxes.push('<div class="box"><svg viewBox="0 0 100 100" aria-hidden="true">'+paths+'</svg></div>');
-  }
-  return boxes.join("") + (capped ? '<div class="tally-empty">…還有更多</div>' : '');
+/* 由大至細換算，例如 137 分 = 🥭🥭 🍉🍉🍉 🍇 🍌🍌 */
+function toFruits(n){
+  var out = [], left = n;
+  FRUITS.forEach(function(f){
+    var c = Math.floor(left / f.value);
+    left -= c * f.value;
+    while(c-- > 0) out.push(f);
+  });
+  return out;
 }
+function fruitStr(n){
+  return toFruits(n).map(function(f){ return f.emoji; }).join("");
+}
+function fruitHTML(total,animate){
+  if(total <= 0){
+    if(total === 0) return '<div class="fruits-empty">還未開始儲水果</div>';
+    return '<div class="owing">欠 <em>'+fruitStr(Math.abs(total))+'</em></div>';
+  }
+  var list = toFruits(total), capped = false;
+  if(list.length > 150){ list = list.slice(0,150); capped = true; }
+  return list.map(function(f,i){
+    var c = (f.value >= 50 ? "big" : "");
+    if(animate && i === list.length-1 && !capped) c += (c ? " " : "") + "pop";
+    return '<span'+(c ? ' class="'+c+'"' : '')+'>'+f.emoji+'</span>';
+  }).join("") + (capped ? '<div class="fruits-empty">…還有更多</div>' : '');
+}
+
+/* ---------- 禮物表 ---------- */
+var GIFTS = [
+  {fruit:"🍉",count:3,need:30, name:"小禮物"},
+  {fruit:"🥭",count:3,need:150,name:"中禮物"},
+  {fruit:"🥭",count:6,need:300,name:"大禮物"}
+];
 
 /* ---------- 計數 ---------- */
 function valid(){ return events.filter(function(e){ return e.day >= START; }); }
@@ -430,7 +498,7 @@ function cls(n){ return n>0 ? "pos" : (n<0 ? "neg" : "zero"); }
 
 /* ---------- 加減 ---------- */
 function add(entries,reason){
-  if(entries.length > 1){ Sound.quarrel(); }
+  if(entries.length > 1){ Sound.quarrel(); boom(); }
   else if(entries[0].delta === 1){ Sound.one(entries[0].kid); }
   else if(entries[0].delta === 5){ Sound.five(entries[0].kid); }
   else if(entries[0].delta === 10){ Sound.ten(entries[0].kid); }
@@ -444,8 +512,22 @@ function add(entries,reason){
   render();
   flash = null;
   toast(entries.map(function(x){
-    return (x.kid==="hugo"?"Hugo":"Sophie")+" "+signed(x.delta)+" 分";
+    var nm = x.kid==="hugo" ? "Hugo" : "Sophie";
+    return x.delta > 0 ? nm+" 得到 "+fruitStr(x.delta)
+                       : nm+" 沒收 "+fruitStr(-x.delta);
   }).join("，"));
+}
+
+/* 爭執：全頁震一震，再蓋一個大印章 —— 比其他動作誇張得多 */
+var boomTimer;
+function boom(){
+  var el = document.getElementById("boom");
+  var wrap = document.querySelector(".wrap");
+  el.classList.add("on");
+  wrap.classList.add("shake");
+  setTimeout(function(){ wrap.classList.remove("shake"); },700);
+  clearTimeout(boomTimer);
+  boomTimer = setTimeout(function(){ el.classList.remove("on"); },2000);
 }
 function removeGroup(gid){
   Sound.undo();
@@ -540,6 +622,24 @@ var Sound = (function(){
     src.start(t);
   }
 
+  /* 由高滑落低的一下「泄氣」聲，只用於爭執 */
+  function swoop(at,vol){
+    var c = ac(); if(!c) return;
+    var t = c.currentTime + at;
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.06);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.95);
+    g.connect(master);
+    var lp = c.createBiquadFilter();
+    lp.type = "lowpass"; lp.frequency.value = 1100;
+    var o = c.createOscillator();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(330,t);
+    o.frequency.exponentialRampToValueAtTime(65,t+0.9);
+    o.connect(lp); lp.connect(g); o.start(t); o.stop(t+1.0);
+  }
+
   /* 五聲音階（宮商角徵羽），每個小朋友差一個四度，聽聲就知邊個加分 */
   var PENT = {C5:523.25,D5:587.33,E5:659.25,G5:783.99,A5:880.00,C6:1046.50,D6:1174.66,E6:1318.51,G6:1567.98};
   function reg(kid){ return kid === "sophie" ? 1.3348 : 1; }
@@ -582,14 +682,19 @@ var Sound = (function(){
       pluck(PENT.A5*r/2,0,0.40,0.20,"triangle");
       pluck(PENT.E5*r/2,0.095,0.55,0.18,"triangle");
     },
-    /* 爭執：兩下低沉木魚，帶少少不和諧 */
+    /* 爭執：三下越來越低沉的重擊，收尾再滑落 —— 刻意比其他音效誇張 */
     quarrel:function(){
       if(muted) return;
-      knock(0,0.22,260,0.09);
-      pluck(146.83,0,0.55,0.22,"triangle");
-      pluck(138.59,0.01,0.35,0.10,"triangle");
-      knock(0.20,0.20,220,0.09);
-      pluck(110.00,0.20,0.75,0.22,"triangle");
+      knock(0,0.30,210,0.13);
+      pluck(146.83,0,0.85,0.28,"triangle");
+      pluck(138.59,0.015,0.60,0.17,"triangle");
+      knock(0.19,0.29,175,0.13);
+      pluck(110.00,0.19,0.90,0.27,"triangle");
+      pluck(103.83,0.205,0.65,0.16,"triangle");
+      knock(0.40,0.28,145,0.15);
+      pluck(87.31,0.40,1.30,0.28,"triangle");
+      pluck(82.41,0.42,1.00,0.16,"triangle");
+      swoop(0.56,0.15);
     },
     /* 撤銷／刪除：一下輕輕收筆 */
     undo:function(){
@@ -619,28 +724,47 @@ function render(){
   document.getElementById("kids").innerHTML = KIDS.map(function(k){
     var total = totalOf(k.id), today = todayOf(k.id);
     var has = events.some(function(e){ return e.kid===k.id; });
+    var chip = today > 0 ? "今日 " + fruitStr(today)
+             : today < 0 ? '今日 少了 ' + fruitStr(-today)
+             : "今日 未有";
     return ''+
     '<section class="card" data-kid="'+k.id+'">'+
       '<div class="card-top">'+
         '<span class="name">'+k.name+'</span>'+
-        '<span class="today-chip">今日 <b class="'+cls(today)+'">'+signed(today)+'</b> 分</span>'+
+        '<span class="today-chip '+cls(today)+'">'+chip+'</span>'+
       '</div>'+
-      '<div class="total"><b style="color:var(--accent)">'+total+'</b><span>總分</span></div>'+
-      '<div class="tally" aria-label="'+k.name+' 共 '+total+' 分">'+tallyHTML(total,flash===k.id)+'</div>'+
+      '<div class="fruits" aria-label="'+k.name+' 的水果籃">'+fruitHTML(total,flash===k.id)+'</div>'+
+      '<div class="score-quiet">合共 '+total+' 分</div>'+
       '<div class="btns">'+
-        '<button class="score-btn" data-act="add" data-kid="'+k.id+'" data-d="1"><span class="n">+1</span><span class="t">表現良好</span></button>'+
-        '<button class="score-btn" data-act="add" data-kid="'+k.id+'" data-d="5"><span class="n">+5</span><span class="t">表現優秀</span></button>'+
-        '<button class="score-btn big" data-act="add" data-kid="'+k.id+'" data-d="10"><span class="n">+10</span><span class="t">表現卓越</span></button>'+
+        '<button class="score-btn" data-act="add" data-kid="'+k.id+'" data-d="1"><span class="n">🍌</span><span class="t">表現良好</span></button>'+
+        '<button class="score-btn" data-act="add" data-kid="'+k.id+'" data-d="5"><span class="n">🍇</span><span class="t">表現優秀</span></button>'+
+        '<button class="score-btn big" data-act="add" data-kid="'+k.id+'" data-d="10"><span class="n">🍉</span><span class="t">表現卓越</span></button>'+
       '</div>'+
       '<div class="minor">'+
-        '<button data-act="add" data-kid="'+k.id+'" data-d="-5">個別扣 5 分</button>'+
+        '<button data-act="add" data-kid="'+k.id+'" data-d="-5">個別沒收 🍇</button>'+
         '<button data-act="undo" data-kid="'+k.id+'"'+(has?"":" disabled")+'>撤銷最後一次</button>'+
       '</div>'+
     '</section>';
   }).join("");
 
+  renderGifts();
   renderDaily();
   renderLog();
+}
+
+function renderGifts(){
+  document.getElementById("giftBox").innerHTML = GIFTS.map(function(g){
+    var prog = KIDS.map(function(k){
+      var t = Math.max(0, totalOf(k.id));
+      if(t >= g.need) return '<span class="ready">'+k.name+' 已儲夠 ✓</span>';
+      return k.name+' 還差 <span class="f">'+fruitStr(g.need - t)+'</span>';
+    }).join("<br>");
+    return '<div class="gift-row">'+
+      '<span class="gift-fruit">'+new Array(g.count+1).join(g.fruit)+'</span>'+
+      '<span class="gift-name">'+g.name+'</span>'+
+      '<span class="gift-prog">'+prog+'</span>'+
+    '</div>';
+  }).join("");
 }
 
 function renderDaily(){
@@ -673,7 +797,7 @@ function renderLog(){
   groups.reverse();
   var box = document.getElementById("logBox");
   if(!groups.length){
-    box.innerHTML = '<p class="empty">暫無紀錄。<br>他們表現良好時，按上面的按鈕加分。</p>';
+    box.innerHTML = '<p class="empty">暫無紀錄。<br>他們表現良好時，按上面的水果按鈕。</p>';
     return;
   }
   box.innerHTML = groups.slice(0,200).map(function(g){
@@ -690,7 +814,7 @@ function renderLog(){
 }
 
 /* ---------- 按鈕 ---------- */
-var REASON = {"1":"表現良好","5":"表現優秀","10":"表現卓越","-5":"個別扣分"};
+var REASON = {"1":"表現良好 🍌","5":"表現優秀 🍇","10":"表現卓越 🍉","-5":"個別沒收 🍇"};
 document.addEventListener("click",function(ev){
   var b = ev.target.closest("[data-act]");
   if(!b) return;
