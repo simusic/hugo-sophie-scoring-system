@@ -35,22 +35,25 @@ body{
   background-size:100% 34px;
   -webkit-font-smoothing:antialiased;
 }
-.wrap{max-width:1040px;margin:0 auto;padding:0 16px 64px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px 24px}
 
 /* ---------- 練習簿封面 header ---------- */
+/* 標題與日期並排，日期靠右，省回一行的高度 */
 header{
-  margin:0 -16px 22px;
-  padding:26px 22px 22px;
+  margin:0 -16px 14px;
+  padding:16px 22px 14px;
   background:var(--book);
   color:#F3EEDF;
   border-bottom:6px double rgba(255,255,255,.45);
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:10px 20px;flex-wrap:wrap;
 }
 .book-label{
   display:inline-block;
   background:var(--paper-2);
   color:var(--ink);
   border:2px solid var(--book-dark);
-  padding:14px 20px 12px;
+  padding:10px 16px 9px;
   max-width:100%;
 }
 h1{
@@ -68,14 +71,15 @@ h1{
   letter-spacing:.02em;
 }
 .today-line{
-  margin-top:14px;
+  margin-top:0;
   font-size:15px;
   letter-spacing:.08em;
   color:rgba(243,238,223,.85);
+  white-space:nowrap;
 }
 
 /* ---------- 卡 ---------- */
-.kids{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.kids{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:720px){.kids{grid-template-columns:1fr}}
 
 .card{
@@ -83,7 +87,7 @@ h1{
   border:1px solid var(--rule);
   border-top:5px solid var(--accent);
   border-radius:var(--radius);
-  padding:18px 16px 16px;
+  padding:13px 14px 12px;
   box-shadow:0 1px 0 rgba(0,0,0,.04);
 }
 .card[data-kid="hugo"]{--accent:var(--hugo)}
@@ -120,18 +124,18 @@ h1{
   min-height:52px;
   align-content:flex-start;
   padding:4px 2px;
-  font-size:33px;line-height:1.12;
+  font-size:29px;line-height:1.12;
 }
 .fruits span{display:inline-block}
-.fruits span.big{font-size:41px}
-.fruits span.huge{font-size:51px}
+.fruits span.big{font-size:36px}
+.fruits span.huge{font-size:44px}
 .fruits-empty{font-size:14px;color:var(--ink-soft);padding:16px 2px}
 .owing{
   font-family:var(--display);font-weight:700;color:var(--stamp);
   border:2px solid var(--stamp);display:inline-block;padding:6px 12px;
   transform:rotate(-3deg);font-size:17px;letter-spacing:.08em;
 }
-.owing em{font-style:normal;font-size:23px}
+.owing em{font-style:normal;font-size:20px}
 @media(prefers-reduced-motion:no-preference){
   .fruits span.pop{animation:pop .44s cubic-bezier(.2,1.45,.4,1)}
 }
@@ -144,10 +148,10 @@ h1{
 /* ---------- 禮物表 ---------- */
 .gift-row{
   display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-  padding:11px 0;border-bottom:1px dashed var(--rule);
+  padding:7px 0;border-bottom:1px dashed var(--rule);
 }
 .gift-row:last-child{border-bottom:none}
-.gift-fruit{font-size:25px;letter-spacing:1px;white-space:nowrap}
+.gift-fruit{font-size:22px;letter-spacing:1px;white-space:nowrap}
 .gift-name{
   font-family:var(--display);font-weight:700;font-size:18px;
   letter-spacing:.06em;white-space:nowrap;
@@ -180,7 +184,7 @@ h1{
 
 /* ---------- 評分指引 ---------- */
 #guideBox td{vertical-align:top}
-.guide-fruit{font-size:30px;width:1%;padding-right:4px !important;line-height:1.3}
+.guide-fruit{font-size:26px;width:1%;padding-right:4px !important;line-height:1.3}
 .guide-label{
   font-family:var(--display);font-weight:700;font-size:16px;
   white-space:nowrap;letter-spacing:.04em;width:1%;
@@ -188,26 +192,26 @@ h1{
 .guide-items{font-size:15px;line-height:1.85;color:var(--ink-soft)}
 
 /* ---------- 按鈕 ---------- */
-.btns{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.btns{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:9px}
 button{font-family:var(--body);cursor:pointer}
 .score-btn{
   border:1px solid var(--accent);
   background:#fff;
   color:var(--accent);
   border-radius:var(--radius);
-  padding:11px 6px 9px;
-  min-height:62px;
+  padding:8px 6px 7px;
+  min-height:54px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   transition:transform .08s ease,background .12s ease;
 }
-.score-btn .n{font-size:31px;line-height:1.05}
+.score-btn .n{font-size:27px;line-height:1.05}
 .score-btn .t{font-size:14px;letter-spacing:.02em}
 .score-btn:hover{background:color-mix(in srgb,var(--accent) 8%,#fff)}
 .score-btn:active{transform:translateY(2px)}
 .score-btn.big{background:var(--accent);color:#fff}
 .score-btn.big:hover{background:color-mix(in srgb,var(--accent) 85%,#000)}
 
-.minor{display:flex;gap:8px;margin-top:8px}
+.minor{display:flex;gap:7px;margin-top:6px}
 .minor button{
   flex:1;background:none;border:1px dashed var(--rule);color:var(--ink-soft);
   border-radius:var(--radius);padding:8px;font-size:14px;min-height:38px;
@@ -217,12 +221,12 @@ button{font-family:var(--body);cursor:pointer}
 
 /* ---------- 爭執 印章按鈕 ---------- */
 .quarrel{
-  width:100%;margin:18px 0 8px;
+  width:100%;margin:12px 0 0;
   background:var(--paper-2);
   border:3px double var(--stamp);
   color:var(--stamp);
   border-radius:var(--radius);
-  padding:16px;min-height:70px;
+  padding:11px;min-height:58px;
   font-family:var(--display);font-weight:700;font-size:clamp(18px,4.1vw,23px);
   letter-spacing:.1em;
   transition:transform .08s ease,background .12s ease;
@@ -230,7 +234,7 @@ button{font-family:var(--body);cursor:pointer}
 .quarrel small{display:block;font-family:var(--body);font-weight:400;font-size:14px;letter-spacing:.02em;margin-top:5px;opacity:.8}
 .quarrel:hover{background:#fdf1ef}
 .quarrel:active{transform:scale(.985) rotate(-.4deg);background:var(--stamp);color:#fff}
-.quarrel .qf{font-size:25px;letter-spacing:2px}
+.quarrel .qf{font-size:22px;letter-spacing:2px}
 
 /* ---------- 爭執：全頁震動 + 大印章 ---------- */
 /* 震動只加在內容區：若加在 body，其 transform 會令 position:fixed 的
@@ -255,13 +259,13 @@ button{font-family:var(--body);cursor:pointer}
   padding:24px 30px 22px;text-align:center;transform:rotate(-4deg);
   box-shadow:0 12px 44px rgba(0,0,0,.28);max-width:86vw;
 }
-.boom-emoji{font-size:clamp(51px,15vw,76px);line-height:1;letter-spacing:2px}
+.boom-emoji{font-size:clamp(44px,13vw,66px);line-height:1;letter-spacing:2px}
 .boom-title{
   font-family:var(--display);font-weight:900;letter-spacing:.14em;
   font-size:clamp(24px,7.1vw,37px);margin-top:10px;
 }
 .boom-sub{font-size:clamp(15px,3.9vw,17px);margin-top:8px;letter-spacing:.04em}
-.boom-sub .f{font-size:22px;letter-spacing:2px}
+.boom-sub .f{font-size:19px;letter-spacing:2px}
 @media(prefers-reduced-motion:no-preference){
   #boom.on .boom-card{animation:boomIn .52s cubic-bezier(.2,1.5,.4,1) both}
 }
@@ -272,19 +276,19 @@ button{font-family:var(--body);cursor:pointer}
 }
 
 /* ---------- 下面幾欄：闊屏並排，窄屏才疊落去，減少上下捲動 ---------- */
-.duo{display:grid;grid-template-columns:.82fr 1.18fr;gap:16px;margin-top:18px}
-.panels{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;margin-top:16px}
+.duo{display:grid;grid-template-columns:.82fr 1.18fr;gap:12px;margin-top:12px}
+.panels{display:grid;grid-template-columns:1fr 1.15fr;gap:12px;margin-top:12px}
 @media(max-width:720px){
   .duo,.panels{grid-template-columns:1fr}
 }
-.panel{background:var(--paper-2);border:1px solid var(--rule);border-radius:var(--radius);padding:16px}
+.panel{background:var(--paper-2);border:1px solid var(--rule);border-radius:var(--radius);padding:12px 14px}
 .panel h2{
-  font-family:var(--display);font-size:18px;font-weight:700;margin:0 0 12px;
-  letter-spacing:.08em;padding-bottom:8px;border-bottom:1px solid var(--rule);
+  font-family:var(--display);font-size:18px;font-weight:700;margin:0 0 8px;
+  letter-spacing:.08em;padding-bottom:6px;border-bottom:1px solid var(--rule);
 }
 .scroll{max-height:320px;overflow:auto}
 table{width:100%;border-collapse:collapse;font-size:15px}
-th,td{padding:7px 6px;text-align:left;border-bottom:1px solid var(--rule)}
+th,td{padding:5px 6px;text-align:left;border-bottom:1px solid var(--rule)}
 th{font-weight:500;color:var(--ink-soft);font-size:14px;letter-spacing:.04em}
 td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .pos{color:var(--book)}
@@ -312,7 +316,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 .del:hover{color:var(--stamp);background:#fdf1ef}
 .empty{color:var(--ink-soft);font-size:15px;line-height:1.7;padding:6px 0}
 
-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px;flex-wrap:wrap}
+footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
 .save-state{font-size:14px;color:var(--ink-soft)}
 .reset{background:none;border:1px solid var(--rule);color:var(--ink-soft);border-radius:var(--radius);padding:8px 14px;font-size:14px}
 .reset:hover{border-color:var(--stamp);color:var(--stamp)}
@@ -384,7 +388,7 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:12px;ma
   </section>
 </div>
 
-<section class="panel" style="margin-top:16px">
+<section class="panel" style="margin-top:12px">
   <h2>評分指引</h2>
   <div id="guideBox"></div>
 </section>
