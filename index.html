@@ -159,11 +159,16 @@ h1{
 .ready{color:var(--book);font-weight:700}
 
 /* ---------- 水果換算 ---------- */
+/* 闊屏：直排一行一條，與旁邊禮物表高度相稱
+   窄屏：橫排自動換行，省回上下空間 */
 .convert{
-  margin:0;display:flex;flex-wrap:wrap;gap:8px 18px;
+  margin:0;display:flex;flex-direction:column;gap:10px;
   font-size:16px;letter-spacing:.04em;color:var(--ink);
 }
 .convert span{white-space:nowrap}
+@media(max-width:720px){
+  .convert{flex-direction:row;flex-wrap:wrap;gap:8px 18px}
+}
 
 /* ---------- 評分指引 ---------- */
 #guideBox td{vertical-align:top}
@@ -258,9 +263,12 @@ button{font-family:var(--body);cursor:pointer}
   100%{transform:scale(1) rotate(-4deg);opacity:1}
 }
 
-/* ---------- 下面兩欄 ---------- */
-.panels{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;margin-top:22px}
-@media(max-width:720px){.panels{grid-template-columns:1fr}}
+/* ---------- 下面幾欄：闊屏並排，窄屏才疊落去，減少上下捲動 ---------- */
+.duo{display:grid;grid-template-columns:.82fr 1.18fr;gap:16px;margin-top:18px}
+.panels{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;margin-top:16px}
+@media(max-width:720px){
+  .duo,.panels{grid-template-columns:1fr}
+}
 .panel{background:var(--paper-2);border:1px solid var(--rule);border-radius:var(--radius);padding:16px}
 .panel h2{
   font-family:var(--display);font-size:16px;font-weight:700;margin:0 0 12px;
@@ -337,14 +345,18 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:12px;ma
   <small>一個巴掌拍不響，故此兩人同時沒收</small>
 </button>
 
-<section class="panel" style="margin-top:18px">
-  <h2>水果換算</h2>
-  <p class="convert">
-    <span>5 🍇 = 1 🍓</span><span>5 🍓 = 1 🍌</span><span>5 🍌 = 1 🥭</span><span>5 🥭 = 1 🍉</span>
-  </p>
-  <h2 style="margin-top:18px">禮物表</h2>
-  <div id="giftBox"></div>
-</section>
+<div class="duo">
+  <section class="panel">
+    <h2>水果換算</h2>
+    <p class="convert">
+      <span>5 🍇 = 1 🍓</span><span>5 🍓 = 1 🍌</span><span>5 🍌 = 1 🥭</span><span>5 🥭 = 1 🍉</span>
+    </p>
+  </section>
+  <section class="panel">
+    <h2>禮物表</h2>
+    <div id="giftBox"></div>
+  </section>
+</div>
 
 <div class="panels">
   <section class="panel">
